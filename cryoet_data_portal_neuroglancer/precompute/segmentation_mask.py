@@ -301,10 +301,8 @@ def create_mesh(
     json_descriptor = '{{"fragments": ["mesh.{}.{}"]}}'
     for id in ids[1:]:
         mesh_data = vol.get_object_mesh(id)
-        with open(str(mesh_path / ".".join(("mesh", str(id), str(id)))), "wb") as mesh_file:
-            mesh_file.write(mesh_data)
-        with open(str(mesh_path / "".join((str(id), ":0"))), "w") as frag_file:
-            frag_file.write(json_descriptor.format(id, id))
+        (mesh_path / f"mesh.{id}.{id}").write_bytes(mesh_data)
+        (mesh_path / f"{id}:0").write_text(json_descriptor.format(id, id))
     print(f"Wrote segmentation mesh to {mesh_path}")
 
 
@@ -342,15 +340,15 @@ def encode_segmentation(
                 f"The output directory {output_path!s} exists from a previous run, deleting before starting conversion",
             )
             shutil.rmtree(output_path)
-    elif not delete_existing and output_path.exists():
-        print(f"The output directory {output_path!s} already exists")
-        return
-    output_path.mkdir(parents=True, exist_ok=True)
-    for c in create_segmentation(dask_data, block_size, convert_non_zero_to=convert_non_zero_to):
-        c.write_to_directory(output_path / data_directory)
+    # elif not delete_existing and output_path.exists():
+    #     print(f"The output directory {output_path!s} already exists")
+    #     return
+    # output_path.mkdir(parents=True, exist_ok=True)
+    # for c in create_segmentation(dask_data, block_size, convert_non_zero_to=convert_non_zero_to):
+    #     c.write_to_directory(output_path / data_directory)
 
-    if len(dask_data.chunksize) != 3:
-        raise ValueError(f"Expected 3 chunk dimensions, got {len(dask_data.chunksize)}")
+    # if len(dask_data.chunksize) != 3:
+    #     raise ValueError(f"Expected 3 chunk dimensions, got {len(dask_data.chunksize)}")
 
     if include_mesh:
         print(f"Converting {filename} to neuroglancer mesh format")
